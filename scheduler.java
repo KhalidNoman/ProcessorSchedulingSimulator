@@ -35,20 +35,20 @@ public class scheduler extends JFrame {
 
         @Override
         public String toString() {
-            return letter + " " + arrival + " " + priority + " " + burst + " " ;
+            return letter + " " ;
         }
     }
 
-    class Processing implements Runnable{
+    class Processing extends Thread{
         Processing(){}
         public void run(){
             int i = 0, done = 0;
             do{
                 if (done < size && elements.get(done).getArrival() <= i ) {
-                    txtGantt.append("\t" + i + " ADD " + elements.get(done).getLetter() + "\n");
-                    System.out.println("\t" + i + " ADD " + elements.get(done).getLetter());
+                    txtGantt.append("\tADD " + elements.get(done).getLetter() + "\n");
+                    System.out.println("\tADD " + elements.get(done).getLetter());
                     pq.add(elements.get(done));
-                    System.out.println(pq.toString());
+                    lblQueue.setText("Queue: " + pq.toString());
                     //elements.remove(0);
                     done++;
                 }
@@ -68,6 +68,7 @@ public class scheduler extends JFrame {
                         pq.peek().setBurst(i);
                         elements.set((int)(pq.peek().getLetter().charAt(0) - 65), pq.peek());
                         pq.remove();
+                        lblQueue.setText("Queue: " + pq.toString());
                         i--;
                     }
                 } else System.out.println(i+1);
@@ -78,8 +79,11 @@ public class scheduler extends JFrame {
             }while(!pq.isEmpty() || done != size);
             System.out.println(i);
             System.out.println(elements.toString());
+
             pq.clear();
             elements.clear();
+
+
         }
     }
 
@@ -155,7 +159,11 @@ public class scheduler extends JFrame {
                             System.out.println(elements.toString());
 
                             Processing pr = new Processing();
-                            pr.run();
+                            pr.start();
+                            lblQueue.setText("Queue: " );
+                            lblCurrent.setText("Current: ");
+                            txtGantt.setText("");
+                            txtContent.setText("");
 
 
                         }
