@@ -44,11 +44,12 @@ public class scheduler extends JFrame {
         public void run(){
             int i = 0, done = 0;
             do{
-                if (elements.size() > 0 && elements.get(0).getArrival() <= i ) {
-                    System.out.println("\t" + i + " ADD " + elements.get(0).getLetter());
-                    pq.add(elements.get(0));
+                if (done < size && elements.get(done).getArrival() <= i ) {
+                    txtGantt.append("\t" + i + " ADD " + elements.get(done).getLetter() + "\n");
+                    System.out.println("\t" + i + " ADD " + elements.get(done).getLetter());
+                    pq.add(elements.get(done));
                     System.out.println(pq.toString());
-                    elements.remove(0);
+                    //elements.remove(0);
                     done++;
                 }
                 element temp = pq.peek();
@@ -57,11 +58,15 @@ public class scheduler extends JFrame {
                         pq.peek().setBurst(temp.getBurst() - 1);
                         lblCurrent.setText("Current: " + temp.getLetter());
                         System.out.println((i + 1) + " " + pq.peek().getLetter());
+                        txtGantt.append((i + 1) + " " + pq.peek().getLetter() + "\n");
                         SwingUtilities.updateComponentTreeUI(mainPanel);
 
 
                     } else {
                         System.out.println("\tREMOVE " + pq.peek().getLetter());
+                        txtGantt.append("\tREMOVE " + pq.peek().getLetter() + "\n");
+                        pq.peek().setBurst(i);
+                        elements.set((int)(pq.peek().getLetter().charAt(0) - 65), pq.peek());
                         pq.remove();
                         i--;
                     }
@@ -72,6 +77,7 @@ public class scheduler extends JFrame {
                 } catch (Exception err) {};
             }while(!pq.isEmpty() || done != size);
             System.out.println(i);
+            System.out.println(elements.toString());
             pq.clear();
             elements.clear();
         }
@@ -98,6 +104,7 @@ public class scheduler extends JFrame {
     private JPanel quantumPanel;
     private JLabel lblInput;
     private JPanel setupPanel;
+    private JTextArea txtGantt;
 
     public scheduler(String title) throws Exception{
         super(title);
