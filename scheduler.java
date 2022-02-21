@@ -35,37 +35,56 @@ public class scheduler extends JFrame {
 
         @Override
         public String toString() {
-            return arrival + " " + priority + " " + burst + " " + letter;
+            return letter + " " + arrival + " " + priority + " " + burst + " " ;
         }
     }
 
     class Processing implements Runnable{
         Processing(){}
         public void run(){
-            while(!pq.isEmpty()){
-                element temp = pq.peek();
-                if(temp.getBurst() != 0){
-                    pq.peek().setBurst(temp.getBurst()-1);
-                    lblCurrent.setText("Current: " + temp.getLetter());
-                    SwingUtilities.updateComponentTreeUI(lblCurrent);
-                    try {
-                        TimeUnit.SECONDS.sleep(1);
-                    }catch(Exception err){};
-                } else{
-                    pq.remove();
+            int i = 0, done = 0;
+            do{
+                if (elements.size() > 0 && elements.get(0).getArrival() <= i ) {
+                    System.out.println("\t" + i + " ADD " + elements.get(0).getLetter());
+                    pq.add(elements.get(0));
+                    System.out.println(pq.toString());
+                    elements.remove(0);
+                    done++;
                 }
-                System.out.println(pq.peek());
-            }
+                element temp = pq.peek();
+                if(temp != null) {
+                    if (temp.getBurst() > 0) {
+                        pq.peek().setBurst(temp.getBurst() - 1);
+                        lblCurrent.setText("Current: " + temp.getLetter());
+                        System.out.println((i + 1) + " " + pq.peek().getLetter());
+                        SwingUtilities.updateComponentTreeUI(mainPanel);
+
+
+                    } else {
+                        System.out.println("\tREMOVE " + pq.peek().getLetter());
+                        pq.remove();
+                        i--;
+                    }
+                } else System.out.println(i+1);
+                i++;
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (Exception err) {};
+            }while(!pq.isEmpty() || done != size);
+            System.out.println(i);
+            pq.clear();
+            elements.clear();
         }
     }
 
 
     PriorityQueue<element> pq = new PriorityQueue<element>(100,
             (element1, element2) -> Integer.compare(element1.getPriority(), element2.getPriority()));
-
-    File selectedFile;
+    ArrayList<element> elements = new ArrayList<element>();
+    File selectedFile = new File("C:\\Users\\Khalid\\Desktop\\input.txt");
     Scanner sc;
     int size;
+
 
     private JPanel mainPanel;
     private JTextField txtPath;
@@ -124,9 +143,10 @@ public class scheduler extends JFrame {
                             for(int i  = 0; i < size; i++){
                                 int arr = sc.nextInt(), prt = sc.nextInt(), brst = sc.nextInt();
                                 element temp = new element(arr, prt, brst, i+65);
-                                pq.add(temp);
+                                elements.add(temp);
                             }
-                            System.out.println(pq.toString());
+                            System.out.println(elements.toString());
+
                             Processing pr = new Processing();
                             pr.run();
 
