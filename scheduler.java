@@ -40,6 +40,8 @@ public class scheduler extends JFrame {
     }
 
     class Processing extends Thread{
+        String current;
+        int times = 0;
         Processing(){}
         public void run(){
             int i = 0, done = 0;
@@ -55,12 +57,23 @@ public class scheduler extends JFrame {
                 element temp = pq.peek();
                 if(temp != null) {
                     if (temp.getBurst() > 0) {
+                        if(!temp.getLetter().equals(current)){
+                            current = temp.getLetter();
+                            times = 1;
+                        } else {
+                            times++;
+                            if(times > ((int)txtQuantum.getValue()) -1){
+                                element check = pq.peek();
+                                if(pq.peek().getPriority() == check.getPriority())
+                                    pq.add(pq.remove());
+                            }
+
+                        }
+                        temp = pq.peek();
                         pq.peek().setBurst(temp.getBurst() - 1);
                         lblCurrent.setText("Current: " + temp.getLetter());
                         System.out.println((i + 1) + " " + pq.peek().getLetter());
                         txtGantt.append((i + 1) + " " + pq.peek().getLetter() + "\n");
-                        SwingUtilities.updateComponentTreeUI(mainPanel);
-
 
                     } else {
                         System.out.println("\tREMOVE " + pq.peek().getLetter());
@@ -82,7 +95,9 @@ public class scheduler extends JFrame {
 
             pq.clear();
             elements.clear();
-
+            btnGo.setEnabled(true);
+            btnQuantum.setEnabled(true);
+            txtQuantum.setEnabled(true);
 
         }
     }
@@ -156,15 +171,14 @@ public class scheduler extends JFrame {
                                 element temp = new element(arr, prt, brst, i+65);
                                 elements.add(temp);
                             }
-                            System.out.println(elements.toString());
-
                             Processing pr = new Processing();
                             pr.start();
+                            btnGo.setEnabled(false);
+                            btnQuantum.setEnabled(false);
+                            txtQuantum.setEnabled(false);
                             lblQueue.setText("Queue: " );
                             lblCurrent.setText("Current: ");
                             txtGantt.setText("");
-                            txtContent.setText("");
-
 
                         }
                     }catch(Exception err){};
