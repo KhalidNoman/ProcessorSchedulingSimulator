@@ -1,4 +1,5 @@
 import javax.swing.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -39,76 +40,145 @@ public class scheduler extends JFrame {
         }
     }
 
+    class elementComparator implements Comparator<element>{
+        public int compare(element e1, element e2){
+            if(e1.getPriority() <= e2.getPriority()){
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+    }
+
     class Processing extends Thread{
         String current;
         int times = 0;
         Processing(){}
         public void run(){
+            lblQueue.setText("Queue: " );
+            lblCurrent.setText("Current: ");
+            txtGantt.setText("");
             int i = 0, done = 0;
             do{
+//                System.out.println("PQ : " + pq);
+                System.out.println("MINE : " + myQueue);
                 if (done < size && elements.get(done).getArrival() <= i ) {
                     txtGantt.append("\tADD " + elements.get(done).getLetter() + "\n");
                     System.out.println("\tADD " + elements.get(done).getLetter());
-                    pq.add(elements.get(done));
-                    lblQueue.setText("Queue: " + pq.toString());
+//                    pq.add(elements.get(done));
+                    addToPQ(elements.get(done));
+                    lblQueue.setText("Queue: " + myQueue.toString());
                     //elements.remove(0);
                     done++;
                 }
-                element temp = pq.peek();
+//                element temp = pq.peek();
+                element temp = myQueue.get(0);
                 if(temp != null) {
                     if (temp.getBurst() > 0) {
-                        if(!temp.getLetter().equals(current)){
-                            current = temp.getLetter();
-                            times = 1;
-                        } else {
-                            times++;
-                            if(times > ((int)txtQuantum.getValue()) -1){
-                                element check = pq.peek();
-                                if(pq.peek().getPriority() == check.getPriority())
-                                    pq.add(pq.remove());
-                            }
+//                        if(!temp.getLetter().equals(current)){
+//                            current = temp.getLetter();
+//                            times = 1;
+//                        } else {
+//                            System.out.println("HERE times: " + times + " quantum: " + txtQuantum.getValue() + " " + (times > ((int)txtQuantum.getValue()) -1 ));
+//                            if(times > ((int)txtQuantum.getValue()) -1){
+//                                element check = pq.peek();
+//                                if(pq.peek().getPriority() == check.getPriority()) {
+//                                    System.out.println("SWITCH : " + times);
+//                                    pq.add(pq.remove());
+//                                    times = 1;
+//                                }
+//                            }
+//                            times++;
+//                        }
 
+//                        if(!temp.getLetter().equals(current)){
+//                            current = temp.getLetter();
+//                            times = 0;
+//                        } else {
+//                            if(times > (int)txtQuantum.getValue()-1 && myQueue.size() > 1){
+////                                element check = pq.poll();
+//                                element check = myQueue.get(1);
+////                                System.out.println("CHECK: " + check);
+//                                if(temp.getPriority() == check.getPriority()){
+//                                    addToPQ(myQueue.remove(0));
+////                                    System.out.println("pq before: " + pq);
+////                                    pq.add(check);
+////                                    System.out.println("pq after: " + pq);
+//                                    times = 0;
+//                                }
+//                            }
+//                        }
+                        if(myQueue.size() > 1) {
+                            if (myQueue.get(0).getPriority() == myQueue.get(1).getPriority() && times >= (int) txtQuantum.getValue()) {
+                                element swap = myQueue.remove(0);
+                                addToPQ(swap);
+                                times = 0;
+                            }
                         }
-                        temp = pq.peek();
-                        pq.peek().setBurst(temp.getBurst() - 1);
+
+                        times++;
+//                        temp = pq.peek();
+                        temp = myQueue.get(0);
+                        myQueue.get(0).setBurst(temp.getBurst()-1);
+//                        pq.peek().setBurst(temp.getBurst() - 1);
+
                         lblCurrent.setText("Current: " + temp.getLetter());
-                        System.out.println((i + 1) + " " + pq.peek().getLetter());
-                        txtGantt.append((i + 1) + " " + pq.peek().getLetter() + "\n");
+//                        System.out.println((i + 1) + " " + pq.peek().getLetter() + " times "  + times);
+                        System.out.println((i + 1) + " " + myQueue.get(0).getLetter() + " times "  + times);
+//                        txtGantt.append((i + 1) + " " + pq.peek().getLetter() + "\n");
+                        txtGantt.append((i + 1) + " " + myQueue.get(0).getLetter() + "\n");
 
                     } else {
-                        System.out.println("\tREMOVE " + pq.peek().getLetter());
-                        txtGantt.append("\tREMOVE " + pq.peek().getLetter() + "\n");
-                        pq.peek().setBurst(i);
-                        elements.set((int)(pq.peek().getLetter().charAt(0) - 65), pq.peek());
-                        pq.remove();
-                        lblQueue.setText("Queue: " + pq.toString());
+//                        System.out.println("\tREMOVE " + pq.peek().getLetter());
+                        System.out.println("\tREMOVE " + myQueue.get(0).getLetter());
+//                        txtGantt.append("\tREMOVE " + pq.peek().getLetter() + "\n");
+                        txtGantt.append("\tREMOVE " + myQueue.get(0).getLetter() + "\n");
+//                        pq.peek().setBurst(i);
+                        myQueue.get(0).setBurst(i);
+//                        elements.set((int)(pq.peek().getLetter().charAt(0) - 65), pq.peek());
+                        elements.set((int)(myQueue.get(0).getLetter().charAt(0) - 65), myQueue.get(0));
+//                        pq.poll();
+                        myQueue.remove(0);
+//                        lblQueue.setText("Queue: " + pq.toString());
+                        lblQueue.setText("Queue: " + myQueue.toString());
+                        times = 0;
                         i--;
                     }
                 } else System.out.println(i+1);
                 i++;
                 try {
-                    TimeUnit.SECONDS.sleep(1);
+                    Thread.sleep(sleepTime);
                 } catch (Exception err) {};
-            }while(!pq.isEmpty() || done != size);
+            }while(!myQueue.isEmpty() || done != size);
             System.out.println(i);
             System.out.println(elements.toString());
 
             pq.clear();
             elements.clear();
             btnGo.setEnabled(true);
-            btnQuantum.setEnabled(true);
             txtQuantum.setEnabled(true);
 
         }
     }
 
 
-    PriorityQueue<element> pq = new PriorityQueue<element>(100,
-            (element1, element2) -> Integer.compare(element1.getPriority(), element2.getPriority()));
+    PriorityQueue<element> pq = new PriorityQueue<element>(100, new elementComparator());
     ArrayList<element> elements = new ArrayList<element>();
+    ArrayList<element> myQueue = new ArrayList<element>();
     File selectedFile = new File("C:\\Users\\Khalid\\Desktop\\input.txt");
     Scanner sc;
     int size;
+    int sleepTime = 1000;
+
+    public void addToPQ(element temp){
+        for(int i = 0; i < myQueue.size(); i++){
+            if(myQueue.get(i).getPriority() > temp.getPriority()){
+                myQueue.add(i, temp);
+                return;
+            }
+        }
+        myQueue.add(temp);
+    }
 
 
     private JPanel mainPanel;
@@ -124,6 +194,10 @@ public class scheduler extends JFrame {
     private JLabel lblInput;
     private JPanel setupPanel;
     private JTextArea txtGantt;
+    private JLabel lblQuantum;
+    private JButton btnSlower;
+    private JButton btnFaster;
+    private JLabel lblTime;
 
     public scheduler(String title) throws Exception{
         super(title);
@@ -176,14 +250,29 @@ public class scheduler extends JFrame {
                             btnGo.setEnabled(false);
                             btnQuantum.setEnabled(false);
                             txtQuantum.setEnabled(false);
-                            lblQueue.setText("Queue: " );
-                            lblCurrent.setText("Current: ");
-                            txtGantt.setText("");
+
 
                         }
                     }catch(Exception err){};
 
                 }
+            }
+        });
+
+        btnSlower.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                sleepTime += 100;
+                lblTime.setText((double)sleepTime/1000 + " Seconds");
+            }
+        });
+        btnFaster.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+                sleepTime -= 100;
+                lblTime.setText((double)sleepTime/1000 + " Seconds");
             }
         });
     }
