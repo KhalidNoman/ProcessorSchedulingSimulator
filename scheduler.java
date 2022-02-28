@@ -47,6 +47,7 @@ public class scheduler extends JFrame {
         Processing(){}
         public void run(){
             txtTrunaround.setText("");
+            lblAverage.setText("Average Turnaround: ");
             lblQueue.setText("Queue: " );
             lblCurrent.setText("Current: ");
             txtGantt.setText("");
@@ -59,8 +60,8 @@ public class scheduler extends JFrame {
                     txtQueue.setText(myQueue.toString());
                     done++;
                 }
-                element temp = myQueue.get(0);
-                if(temp != null) {
+                if(myQueue.size() > 0) {
+                    element temp = myQueue.get(0);
                     if (temp.getBurst() > 0) {
                         if(myQueue.size() > 1) {
                             if (myQueue.get(0).getPriority() == myQueue.get(1).getPriority() && times >= (int) txtQuantum.getValue()) {
@@ -73,22 +74,26 @@ public class scheduler extends JFrame {
                         times++;
                         temp = myQueue.get(0);
                         myQueue.get(0).setBurst(temp.getBurst()-1);
-
                         txtCurrentProcess.setText(temp.getLetter());
                         System.out.println((i + 1) + " " + myQueue.get(0).getLetter() + " times "  + times);
                         txtGantt.append((i + 1) + " " + myQueue.get(0).getLetter() + "\n");
+                        if(myQueue.get(0).getBurst() == 0){
+                            System.out.println("\tREMOVE " + myQueue.get(0).getLetter());
+                            txtGantt.append("\tREMOVE " + myQueue.get(0).getLetter() + "\n");
+                            myQueue.get(0).setBurst(i);
+                            elements.set((Integer.parseInt(myQueue.get(0).getLetter().substring(1))), myQueue.get(0));
+                            myQueue.remove(0);
+                            txtQueue.setText( myQueue.toString());
+                            times = 0;
+                        }
 
-                    } else {
-                        System.out.println("\tREMOVE " + myQueue.get(0).getLetter());
-                        txtGantt.append("\tREMOVE " + myQueue.get(0).getLetter() + "\n");
-                        myQueue.get(0).setBurst(i);
-                        elements.set((Integer.parseInt(myQueue.get(0).getLetter().substring(1))), myQueue.get(0));
-                        myQueue.remove(0);
-                        txtQueue.setText( myQueue.toString());
-                        times = 0;
-                        i--;
+
+
                     }
-                } else System.out.println(i+1);
+                } else {
+                    txtGantt.append(i+1 + "\n");
+                    System.out.println(i + 1);
+                }
                 i++;
                 try {
                     Thread.sleep(sleepTime);
@@ -142,6 +147,7 @@ public class scheduler extends JFrame {
                 super.mouseClicked(e);
                 JFileChooser fc = new JFileChooser();
                 int chosen = fc.showOpenDialog(mainPanel);
+                txtContent.setText("");
 
                 if(chosen == JFileChooser.APPROVE_OPTION){
                     selectedFile = fc.getSelectedFile();
@@ -190,7 +196,7 @@ public class scheduler extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                sleepTime = Math.abs(sleepTime + 100);
+                sleepTime = Math.abs(sleepTime + 500);
                 lblTime.setText((double)sleepTime/1000 + " Seconds");
             }
         });
@@ -198,7 +204,7 @@ public class scheduler extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                sleepTime = Math.abs(sleepTime - 100);
+                sleepTime = Math.abs(sleepTime - 500);
                 lblTime.setText((double)sleepTime/1000 + " Seconds");
             }
         });
@@ -244,10 +250,10 @@ public class scheduler extends JFrame {
     }
 
     static class element{
-        int arrival;
-        int priority;
-        int burst;
-        String letter;
+        private int arrival;
+        private int priority;
+        private int burst;
+        private String letter;
 
         public element(int arrival, int priority, int burst, int letter){
             this.arrival = arrival;
@@ -288,7 +294,4 @@ public class scheduler extends JFrame {
         JFrame frame = new scheduler("Scheduler");
         frame.setVisible(true);
     }
-
-
-
 }
