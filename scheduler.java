@@ -1,3 +1,11 @@
+/******************************************************************
+ * Assignment 3
+ * Name: Khalid Noman
+ * Course: COSC 4327
+ * Section: 01
+ * Semester: Spring 2022
+ ******************************************************************/
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
