@@ -80,6 +80,8 @@ public class scheduler extends JFrame {
                                 element swap = myQueue.remove(0);
                                 addToPQ(swap);
                                 times = 0;
+                                txtGantt.append("\tPreempt " + swap.getLetter() + "\n");
+                                txtQueue.setText(stringifyQueue());
                             }
                         }
 
@@ -167,7 +169,8 @@ public class scheduler extends JFrame {
         this.setExtendedState( this.getExtendedState()|JFrame.MAXIMIZED_BOTH );
         this.pack();
 
-        txtQuantum.setValue(2);
+        SpinnerModel model = new SpinnerNumberModel(2, 1, 1000, 1);
+        txtQuantum.setModel(model);
 
 
         txtPath.addMouseListener(new MouseAdapter() {
@@ -289,7 +292,7 @@ public class scheduler extends JFrame {
             }
         });
 
-        txtPath.setDropTarget(new DropTarget() {
+        txtContent.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
                 try {
                     evt.acceptDrop(DnDConstants.ACTION_COPY);
@@ -297,7 +300,23 @@ public class scheduler extends JFrame {
                             evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
                     for (File file : droppedFiles) {
                         selectedFile = file;
-                        System.out.println(file.getAbsolutePath());
+                        if(selectedFile.getName().endsWith(".txt")) {
+                            txtPath.setText(selectedFile.getAbsolutePath());
+                            txtContent.setText("");
+                            try {
+                                sc = new Scanner(selectedFile);
+                                while (sc.hasNext()) {
+                                    txtContent.setText(txtContent.getText() + sc.nextLine() + "\n");
+                                }
+                            } catch (Exception err) {};
+                        } else {
+                            JOptionPane.showMessageDialog(frame,
+                                    "Please use a text file.",
+                                    "Invalid File Type",
+                                    JOptionPane.ERROR_MESSAGE);
+                            selectedFile = null;
+                            txtPath.setText("");
+                        }
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
